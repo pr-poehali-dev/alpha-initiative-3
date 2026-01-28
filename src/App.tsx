@@ -3,8 +3,9 @@ import { Header } from "@/components/Header"
 import { HomePage } from "@/pages/HomePage"
 import { ProfilePage } from "@/pages/ProfilePage"
 import { AuthPage } from "@/pages/AuthPage"
+import { CreateAuthorPage } from "@/pages/CreateAuthorPage"
 
-type Page = "auth" | "home" | "profile"
+type Page = "auth" | "home" | "profile" | "createAuthor"
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("auth")
@@ -37,6 +38,8 @@ function App() {
       setCurrentPage("profile")
     } else if (page === "home") {
       setCurrentPage("home")
+    } else if (page === "createAuthor") {
+      setCurrentPage("createAuthor")
     }
   }
 
@@ -56,6 +59,13 @@ function App() {
         <ProfilePage 
           authorId={selectedAuthorId} 
           onBack={() => setCurrentPage("home")} 
+        />
+      )}
+      
+      {currentPage === "createAuthor" && (
+        <CreateAuthorPage
+          onBack={() => setCurrentPage("home")}
+          onComplete={() => setCurrentPage("home")}
         />
       )}
     </div>

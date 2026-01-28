@@ -93,7 +93,7 @@ export function Header({ onNavigate, currentUser, onLogout }: HeaderProps) {
               <Button variant="outline">
                 Войти
               </Button>
-              <Button>
+              <Button onClick={() => onNavigate('createAuthor')}>
                 Начать
               </Button>
             </>

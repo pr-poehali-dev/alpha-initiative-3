@@ -36,7 +36,11 @@ export function HomePage({ onNavigate }: HomePageProps) {
               Платформа для монетизации творчества. Создавайте контент, получайте поддержку от подписчиков и развивайте свой проект.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" className="text-lg px-8">
+              <Button 
+                size="lg" 
+                className="text-lg px-8"
+                onClick={() => onNavigate('createAuthor')}
+              >
                 Начать зарабатывать
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8">
