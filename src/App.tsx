@@ -116,17 +116,14 @@ function App() {
   const [userSubscriptions, setUserSubscriptions] = useState<string[]>([])
 
   useEffect(() => {
-    const path = window.location.pathname
-    const username = path.substring(1)
-    
     const savedProfiles = localStorage.getItem("boosty_profiles")
     let allProfiles = [...mockProfiles]
     
     if (savedProfiles) {
       const userProfiles = JSON.parse(savedProfiles) as AuthorProfile[]
       allProfiles = [...mockProfiles, ...userProfiles]
-      setAuthorProfiles(allProfiles)
     }
+    setAuthorProfiles(allProfiles)
 
     const savedFollowing = localStorage.getItem("boosty_following")
     if (savedFollowing) {
@@ -138,6 +135,9 @@ function App() {
       setUserSubscriptions(JSON.parse(savedSubscriptions))
     }
 
+    const path = window.location.pathname
+    const username = path.substring(1)
+    
     if (username) {
       const profile = allProfiles.find(p => p.createdBy.toLowerCase() === username.toLowerCase())
       if (profile) {
