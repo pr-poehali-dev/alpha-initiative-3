@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+import { AuthorProfile } from "@/App"
+
 interface CreateAuthorPageProps {
   onBack: () => void
   onComplete: (profile: {
@@ -38,6 +40,7 @@ interface CreateAuthorPageProps {
       previewImage: string
     }[]
   }) => void
+  existingProfile?: AuthorProfile
 }
 
 interface SubscriptionTierData {
@@ -61,24 +64,26 @@ const categories = [
   "Другое"
 ]
 
-export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) {
+export function CreateAuthorPage({ onBack, onComplete, existingProfile }: CreateAuthorPageProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
-    displayName: "",
-    category: "",
-    bio: "",
-    avatar: "",
-    cover: "",
+    displayName: existingProfile?.displayName || "",
+    category: existingProfile?.category || "",
+    bio: existingProfile?.bio || "",
+    avatar: existingProfile?.avatar || "",
+    cover: existingProfile?.cover || "",
     socialLinks: {
-      instagram: "",
-      youtube: "",
-      twitter: ""
+      instagram: existingProfile?.socialLinks.instagram || "",
+      youtube: existingProfile?.socialLinks.youtube || "",
+      twitter: existingProfile?.socialLinks.twitter || ""
     }
   })
 
-  const [subscriptions, setSubscriptions] = useState<SubscriptionTierData[]>([
-    { id: "1", name: "Basic", price: "5", currency: "USD", benefits: ["Access to basic content", "Support the author"], previewImage: "" },
-  ])
+  const [subscriptions, setSubscriptions] = useState<SubscriptionTierData[]>(
+    existingProfile?.subscriptions.length ? existingProfile.subscriptions : [
+      { id: "1", name: "Basic", price: "5", currency: "USD", benefits: ["Access to basic content", "Support the author"], previewImage: "" },
+    ]
+  )
   
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -190,9 +195,9 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
               {currentStep === 1 && (
                 <div className="space-y-6">
                   <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold">Создайте профиль автора</h1>
+                    <h1 className="text-3xl font-bold">{existingProfile ? 'Edit Profile' : 'Create Author Profile'}</h1>
                     <p className="text-muted-foreground">
-                      Заполните информацию о себе
+                      {existingProfile ? 'Update your profile information' : 'Fill in your information'}
                     </p>
                   </div>
 
@@ -363,9 +368,9 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold">Настройте подписки</h1>
+                    <h1 className="text-3xl font-bold">{existingProfile ? 'Edit Subscriptions' : 'Set Up Subscriptions'}</h1>
                     <p className="text-muted-foreground">
-                      Создайте тарифы для подписчиков
+                      {existingProfile ? 'Update your subscription tiers' : 'Create tiers for subscribers'}
                     </p>
                   </div>
 
@@ -522,7 +527,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                       className="flex-1 h-12 text-lg"
                       onClick={handleSubmit}
                     >
-                      Создать профиль
+                      {existingProfile ? 'Save Changes' : 'Create Profile'}
                     </Button>
                   </div>
                 </div>

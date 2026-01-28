@@ -13,6 +13,7 @@ interface ProfilePageProps {
   isFollowing: boolean
   onFollowToggle: (authorId: string) => void
   onBack: () => void
+  onEditProfile?: () => void
 }
 
 const mockPosts = [
@@ -82,8 +83,9 @@ const subscriptionTiers = [
   }
 ]
 
-export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing, onFollowToggle, onBack }: ProfilePageProps) {
+export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing, onFollowToggle, onBack, onEditProfile }: ProfilePageProps) {
   const profile = authorProfiles.find(p => p.id === authorId)
+  const isOwner = profile?.createdBy === currentUser
   
   if (!profile) {
     return (
@@ -275,13 +277,20 @@ export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing
               </p>
 
               <div className="flex gap-3">
-                <Button 
-                  onClick={() => onFollowToggle(authorId)}
-                  variant={isFollowing ? "outline" : "default"}
-                >
-                  <Icon name={isFollowing ? "UserCheck" : "UserPlus"} size={18} className="mr-2" />
-                  {isFollowing ? "Following" : "Follow"}
-                </Button>
+                {isOwner ? (
+                  <Button onClick={onEditProfile}>
+                    <Icon name="Edit" size={18} className="mr-2" />
+                    Edit Profile
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => onFollowToggle(authorId)}
+                    variant={isFollowing ? "outline" : "default"}
+                  >
+                    <Icon name={isFollowing ? "UserCheck" : "UserPlus"} size={18} className="mr-2" />
+                    {isFollowing ? "Following" : "Follow"}
+                  </Button>
+                )}
                 <Button variant="outline">
                   <Icon name="Bell" size={18} className="mr-2" />
                   Notifications

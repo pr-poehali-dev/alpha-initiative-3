@@ -10,13 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { AuthorProfile } from "@/App"
+
 interface HeaderProps {
-  onNavigate: (page: string) => void
+  onNavigate: (page: string, authorId?: string) => void
   currentUser?: string
+  userProfile?: AuthorProfile
   onLogout?: () => void
 }
 
-export function Header({ onNavigate, currentUser, onLogout }: HeaderProps) {
+export function Header({ onNavigate, currentUser, userProfile, onLogout }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -96,18 +99,25 @@ export function Header({ onNavigate, currentUser, onLogout }: HeaderProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Icon name="User" size={16} className="mr-2" />
-                  Профиль
-                </DropdownMenuItem>
+                {userProfile ? (
+                  <DropdownMenuItem onClick={() => onNavigate('profile', userProfile.id)}>
+                    <Icon name="User" size={16} className="mr-2" />
+                    My Profile
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onNavigate('createAuthor')}>
+                    <Icon name="Plus" size={16} className="mr-2" />
+                    Create Profile
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem>
                   <Icon name="Settings" size={16} className="mr-2" />
-                  Настройки
+                  Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout}>
                   <Icon name="LogOut" size={16} className="mr-2" />
-                  Выйти
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

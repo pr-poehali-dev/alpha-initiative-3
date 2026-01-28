@@ -39,11 +39,8 @@ function App() {
   const [userFollowing, setUserFollowing] = useState<string[]>([])
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("boosty_user")
-    if (savedUser) {
-      setCurrentUser(savedUser)
-      setCurrentPage("home")
-    }
+    const path = window.location.pathname
+    const username = path.substring(1)
     
     const savedProfiles = localStorage.getItem("boosty_profiles")
     if (savedProfiles) {
@@ -54,7 +51,38 @@ function App() {
     if (savedFollowing) {
       setUserFollowing(JSON.parse(savedFollowing))
     }
+
+    if (username && savedProfiles) {
+      const profiles = JSON.parse(savedProfiles) as AuthorProfile[]
+      const profile = profiles.find(p => p.createdBy.toLowerCase() === username.toLowerCase())
+      if (profile) {
+        const savedUser = localStorage.getItem("boosty_user")
+        if (savedUser) {
+          setCurrentUser(savedUser)
+          setSelectedAuthorId(profile.id)
+          setCurrentPage("profile")
+          return
+        }
+      }
+    }
+    
+    const savedUser = localStorage.getItem("boosty_user")
+    if (savedUser) {
+      setCurrentUser(savedUser)
+      setCurrentPage("home")
+    }
   }, [])
+
+  useEffect(() => {
+    if (currentPage === "profile" && selectedAuthorId) {
+      const profile = authorProfiles.find(p => p.id === selectedAuthorId)
+      if (profile) {
+        window.history.pushState({}, '', `/${profile.createdBy}`)
+      }
+    } else if (currentPage === "home") {
+      window.history.pushState({}, '', '/')
+    }
+  }, [currentPage, selectedAuthorId, authorProfiles])
 
   const handleAuth = (nickname: string) => {
     setCurrentUser(nickname)
@@ -83,6 +111,20 @@ function App() {
     const existingProfile = authorProfiles.find(p => p.createdBy === currentUser)
     
     if (existingProfile) {
+      const updatedProfile: AuthorProfile = {
+        ...existingProfile,
+        ...profile,
+        id: existingProfile.id,
+        createdBy: existingProfile.createdBy,
+        followers: existingProfile.followers
+      }
+      
+      const updatedProfiles = authorProfiles.map(p => 
+        p.id === existingProfile.id ? updatedProfile : p
+      )
+      
+      setAuthorProfiles(updatedProfiles)
+      localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
       setSelectedAuthorId(existingProfile.id)
       setCurrentPage("profile")
       return
@@ -136,7 +178,12 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      <Header onNavigate={handleNavigate} currentUser={currentUser} onLogout={handleLogout} />
+      <Header 
+        onNavigate={handleNavigate} 
+        currentUser={currentUser} 
+        userProfile={authorProfiles.find(p => p.createdBy === currentUser)}
+        onLogout={handleLogout} 
+      />
       
       {currentPage === "home" && (
         <HomePage onNavigate={handleNavigate} authorProfiles={authorProfiles} />
@@ -149,6 +196,7 @@ function App() {
           currentUser={currentUser}
           isFollowing={userFollowing.includes(selectedAuthorId)}
           onFollowToggle={handleFollowToggle}
+          onEditProfile={() => setCurrentPage("createAuthor")}
           onBack={() => setCurrentPage("home")} 
         />
       )}
@@ -157,6 +205,7 @@ function App() {
         <CreateAuthorPage
           onBack={() => setCurrentPage("home")}
           onComplete={handleCreateProfile}
+          existingProfile={authorProfiles.find(p => p.createdBy === currentUser)}
         />
       )}
     </div>
