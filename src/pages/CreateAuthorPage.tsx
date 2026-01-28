@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,12 +35,39 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
     displayName: "",
     category: "",
     bio: "",
+    avatar: "",
+    cover: "",
     socialLinks: {
       instagram: "",
       youtube: "",
       twitter: ""
     }
   })
+  
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData({ ...formData, avatar: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData({ ...formData, cover: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +96,80 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4">
+                <Label>Обложка профиля</Label>
+                <div 
+                  className="relative h-48 rounded-lg border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer overflow-hidden group"
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  {formData.cover ? (
+                    <>
+                      <img 
+                        src={formData.cover} 
+                        alt="Cover" 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Icon name="Upload" size={32} className="text-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                      <Icon name="Image" size={32} />
+                      <span className="text-sm">Нажмите для загрузки обложки</span>
+                      <span className="text-xs">Рекомендуемый размер: 1200x300</span>
+                    </div>
+                  )}
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverChange}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <Label>Аватар профиля</Label>
+                <div className="flex items-center gap-6">
+                  <div 
+                    className="relative w-32 h-32 rounded-full border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer overflow-hidden group flex-shrink-0"
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    {formData.avatar ? (
+                      <>
+                        <img 
+                          src={formData.avatar} 
+                          alt="Avatar" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Icon name="Upload" size={24} className="text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-muted-foreground">
+                        <Icon name="User" size={32} />
+                        <span className="text-xs text-center px-2">Загрузить фото</span>
+                      </div>
+                    )}
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p>• Квадратное изображение</p>
+                    <p>• Минимум 200x200 пикселей</p>
+                    <p>• Форматы: JPG, PNG</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="displayName">Отображаемое имя *</Label>
                 <Input
