@@ -60,6 +60,29 @@ export function Header({ onNavigate, currentUser, onLogout }: HeaderProps) {
             <Icon name="Search" size={20} />
           </Button>
 
+          <Button 
+            variant="outline" 
+            size="sm"
+            asChild
+            className="hidden md:flex"
+          >
+            <a href="https://t.me/tokare2" target="_blank" rel="noopener noreferrer">
+              <Icon name="MessageCircle" size={16} className="mr-2" />
+              Contact Admin
+            </a>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            size="icon"
+            asChild
+            className="md:hidden"
+          >
+            <a href="https://t.me/tokare2" target="_blank" rel="noopener noreferrer">
+              <Icon name="MessageCircle" size={18} />
+            </a>
+          </Button>
+
           {currentUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
