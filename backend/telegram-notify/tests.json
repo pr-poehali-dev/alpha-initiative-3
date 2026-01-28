@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Send subscription notification",
+      "method": "POST",
+      "body": {
+        "authorName": "Test Author",
+        "tierName": "Premium",
+        "tierPrice": "10",
+        "currency": "$",
+        "paymentMethod": "paypal",
+        "userNickname": "testuser"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -19,6 +19,8 @@ interface SubscriptionTierProps {
   benefits: string[]
   isPopular?: boolean
   currency?: string
+  authorName?: string
+  userNickname?: string
   onSubscribe?: () => void
 }
 
@@ -29,13 +31,32 @@ export function SubscriptionTier({
   benefits,
   isPopular,
   currency = '₽',
+  authorName,
+  userNickname,
   onSubscribe
 }: SubscriptionTierProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState('paypal')
   const [isSubscribed, setIsSubscribed] = useState(false)
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
+    try {
+      await fetch('https://functions.poehali.dev/8791a299-0819-4202-93b5-b9c49fe0853e', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          authorName: authorName || 'Unknown',
+          tierName: name,
+          tierPrice: price.toString(),
+          currency: currency,
+          paymentMethod: paymentMethod,
+          userNickname: userNickname || 'Anonymous'
+        })
+      })
+    } catch (error) {
+      console.error('Failed to notify admin:', error)
+    }
+    
     setIsSubscribed(true)
     setTimeout(() => {
       setIsDialogOpen(false)

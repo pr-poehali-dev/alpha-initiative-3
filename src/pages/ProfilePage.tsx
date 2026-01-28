@@ -9,6 +9,9 @@ import { AuthorProfile } from "@/App"
 interface ProfilePageProps {
   authorId: string
   authorProfiles: AuthorProfile[]
+  currentUser: string
+  isFollowing: boolean
+  onFollowToggle: (authorId: string) => void
   onBack: () => void
 }
 
@@ -79,7 +82,7 @@ const subscriptionTiers = [
   }
 ]
 
-export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePageProps) {
+export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing, onFollowToggle, onBack }: ProfilePageProps) {
   const profile = authorProfiles.find(p => p.id === authorId)
   
   if (!profile) {
@@ -128,13 +131,13 @@ export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePagePro
                 </p>
 
                 <div className="flex gap-3">
-                  <Button>
+                  <Button onClick={() => onFollowToggle(authorId)}>
                     <Icon name="Heart" size={18} className="mr-2" />
-                    Подписаться
+                    Subscribe
                   </Button>
                   <Button variant="outline">
                     <Icon name="Bell" size={18} className="mr-2" />
-                    Уведомления
+                    Notifications
                   </Button>
                   <Button variant="outline" size="icon">
                     <Icon name="Share2" size={18} />
@@ -258,12 +261,12 @@ export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePagePro
               
               <div className="flex gap-6 text-sm">
                 <div>
-                  <span className="font-semibold">0</span>
-                  <span className="text-muted-foreground ml-1">подписчиков</span>
+                  <span className="font-semibold">{profile.followers?.length || 0}</span>
+                  <span className="text-muted-foreground ml-1">followers</span>
                 </div>
                 <div>
                   <span className="font-semibold">0</span>
-                  <span className="text-muted-foreground ml-1">постов</span>
+                  <span className="text-muted-foreground ml-1">posts</span>
                 </div>
               </div>
 
@@ -272,13 +275,16 @@ export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePagePro
               </p>
 
               <div className="flex gap-3">
-                <Button>
-                  <Icon name="Heart" size={18} className="mr-2" />
-                  Подписаться
+                <Button 
+                  onClick={() => onFollowToggle(authorId)}
+                  variant={isFollowing ? "outline" : "default"}
+                >
+                  <Icon name={isFollowing ? "UserCheck" : "UserPlus"} size={18} className="mr-2" />
+                  {isFollowing ? "Following" : "Follow"}
                 </Button>
                 <Button variant="outline">
                   <Icon name="Bell" size={18} className="mr-2" />
-                  Уведомления
+                  Notifications
                 </Button>
                 <Button variant="outline" size="icon">
                   <Icon name="Share2" size={18} />
@@ -317,6 +323,8 @@ export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePagePro
                         description="Subscription tier"
                         benefits={tier.benefits}
                         currency={currencySymbol}
+                        authorName={profile.displayName}
+                        userNickname={currentUser}
                       />
                     </div>
                   )

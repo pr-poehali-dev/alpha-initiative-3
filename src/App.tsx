@@ -28,6 +28,7 @@ export interface AuthorProfile {
     previewImage: string
   }[]
   createdBy: string
+  followers: string[]
 }
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<string>("")
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("")
   const [authorProfiles, setAuthorProfiles] = useState<AuthorProfile[]>([])
+  const [userFollowing, setUserFollowing] = useState<string[]>([])
 
   useEffect(() => {
     const savedUser = localStorage.getItem("boosty_user")
@@ -46,6 +48,11 @@ function App() {
     const savedProfiles = localStorage.getItem("boosty_profiles")
     if (savedProfiles) {
       setAuthorProfiles(JSON.parse(savedProfiles))
+    }
+
+    const savedFollowing = localStorage.getItem("boosty_following")
+    if (savedFollowing) {
+      setUserFollowing(JSON.parse(savedFollowing))
     }
   }, [])
 
@@ -72,11 +79,20 @@ function App() {
     }
   }
 
-  const handleCreateProfile = (profile: Omit<AuthorProfile, 'id' | 'createdBy'>) => {
+  const handleCreateProfile = (profile: Omit<AuthorProfile, 'id' | 'createdBy' | 'followers'>) => {
+    const existingProfile = authorProfiles.find(p => p.createdBy === currentUser)
+    
+    if (existingProfile) {
+      setSelectedAuthorId(existingProfile.id)
+      setCurrentPage("profile")
+      return
+    }
+    
     const newProfile: AuthorProfile = {
       ...profile,
       id: Date.now().toString(),
-      createdBy: currentUser
+      createdBy: currentUser,
+      followers: []
     }
     
     const updatedProfiles = [...authorProfiles, newProfile]
@@ -85,6 +101,33 @@ function App() {
     
     setSelectedAuthorId(newProfile.id)
     setCurrentPage("profile")
+  }
+
+  const handleFollowToggle = (authorId: string) => {
+    let updatedFollowing: string[]
+    
+    if (userFollowing.includes(authorId)) {
+      updatedFollowing = userFollowing.filter(id => id !== authorId)
+    } else {
+      updatedFollowing = [...userFollowing, authorId]
+    }
+    
+    setUserFollowing(updatedFollowing)
+    localStorage.setItem("boosty_following", JSON.stringify(updatedFollowing))
+    
+    const updatedProfiles = authorProfiles.map(profile => {
+      if (profile.id === authorId) {
+        if (updatedFollowing.includes(authorId)) {
+          return { ...profile, followers: [...new Set([...profile.followers, currentUser])] }
+        } else {
+          return { ...profile, followers: profile.followers.filter(f => f !== currentUser) }
+        }
+      }
+      return profile
+    })
+    
+    setAuthorProfiles(updatedProfiles)
+    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
   }
 
   if (currentPage === "auth") {
@@ -103,6 +146,9 @@ function App() {
         <ProfilePage 
           authorId={selectedAuthorId}
           authorProfiles={authorProfiles}
+          currentUser={currentUser}
+          isFollowing={userFollowing.includes(selectedAuthorId)}
+          onFollowToggle={handleFollowToggle}
           onBack={() => setCurrentPage("home")} 
         />
       )}

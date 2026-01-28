@@ -115,8 +115,14 @@ export function HomePage({ onNavigate, authorProfiles }: HomePageProps) {
                       {author.subscribers.toLocaleString()} подписчиков
                     </p>
                   </div>
-                  <Button className="w-full">
-                    Подписаться
+                  <Button 
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onNavigate('profile', author.id)
+                    }}
+                  >
+                    Subscribe
                   </Button>
                 </div>
               </Card>
