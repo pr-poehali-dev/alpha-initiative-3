@@ -5,9 +5,10 @@ import Icon from "@/components/ui/icon"
 interface SubscriptionTierProps {
   name: string
   price: number
-  description: string
+  description?: string
   benefits: string[]
   isPopular?: boolean
+  currency?: string
 }
 
 export function SubscriptionTier({ 
@@ -15,7 +16,8 @@ export function SubscriptionTier({
   price, 
   description, 
   benefits,
-  isPopular 
+  isPopular,
+  currency = '₽'
 }: SubscriptionTierProps) {
   return (
     <Card className={`p-6 relative ${isPopular ? 'border-primary border-2' : ''}`}>
@@ -32,8 +34,8 @@ export function SubscriptionTier({
         </div>
 
         <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-bold">{price}</span>
-          <span className="text-muted-foreground">₽/мес</span>
+          <span className="text-3xl font-bold">{currency === '$' && currency}{price}{currency !== '$' && ` ${currency}`}</span>
+          <span className="text-muted-foreground">/mo</span>
         </div>
 
         <Button className="w-full" variant={isPopular ? "default" : "outline"}>

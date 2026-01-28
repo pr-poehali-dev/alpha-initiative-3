@@ -25,6 +25,7 @@ interface SubscriptionTierData {
   id: string
   name: string
   price: string
+  currency: string
   benefits: string[]
 }
 
@@ -56,7 +57,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
   })
 
   const [subscriptions, setSubscriptions] = useState<SubscriptionTierData[]>([
-    { id: "1", name: "Базовый", price: "199", benefits: ["Доступ к базовому контенту", "Поддержка автора"] },
+    { id: "1", name: "Basic", price: "5", currency: "USD", benefits: ["Access to basic content", "Support the author"] },
   ])
   
   const avatarInputRef = useRef<HTMLInputElement>(null)
@@ -87,7 +88,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
   const addSubscriptionTier = () => {
     setSubscriptions([
       ...subscriptions,
-      { id: Date.now().toString(), name: "", price: "", benefits: [""] }
+      { id: Date.now().toString(), name: "", price: "", currency: "USD", benefits: [""] }
     ])
   }
 
@@ -319,7 +320,10 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                   <Button 
                     type="button"
                     className="w-full h-12 text-lg"
-                    onClick={() => setCurrentStep(2)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setCurrentStep(2)
+                    }}
                   >
                     Далее: Настроить подписки
                     <Icon name="ArrowRight" size={18} className="ml-2" />
@@ -356,17 +360,32 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
 
                           <div className="grid gap-4">
                             <Input
-                              placeholder="Название уровня"
+                              placeholder="Название уровня (Basic, Premium)"
                               value={tier.name}
                               onChange={(e) => updateSubscription(tier.id, 'name', e.target.value)}
                             />
 
-                            <Input
-                              type="number"
-                              placeholder="Цена (₽/мес)"
-                              value={tier.price}
-                              onChange={(e) => updateSubscription(tier.id, 'price', e.target.value)}
-                            />
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                type="number"
+                                placeholder="Цена"
+                                value={tier.price}
+                                onChange={(e) => updateSubscription(tier.id, 'price', e.target.value)}
+                              />
+                              <Select 
+                                value={tier.currency} 
+                                onValueChange={(value) => updateSubscription(tier.id, 'currency', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="USD">$ USD</SelectItem>
+                                  <SelectItem value="EUR">€ EUR</SelectItem>
+                                  <SelectItem value="RUB">₽ RUB</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
 
                           <div className="space-y-2">
@@ -420,14 +439,21 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                       type="button"
                       variant="outline"
                       className="flex-1"
-                      onClick={() => setCurrentStep(1)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setCurrentStep(1)
+                      }}
                     >
                       <Icon name="ArrowLeft" size={18} className="mr-2" />
                       Назад
                     </Button>
                     <Button 
-                      type="submit"
+                      type="button"
                       className="flex-1 h-12 text-lg"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleSubmit(e as any)
+                      }}
                     >
                       Создать профиль
                     </Button>
@@ -472,15 +498,19 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                 <div className="space-y-4">
                   <h3 className="font-semibold">Ваши уровни подписок:</h3>
                   <div className="grid gap-4">
-                    {subscriptions.map((tier) => (
-                      <SubscriptionTier
-                        key={tier.id}
-                        name={tier.name || 'Название уровня'}
-                        price={parseInt(tier.price) || 0}
-                        description="Описание уровня"
-                        benefits={tier.benefits.filter(b => b.trim())}
-                      />
-                    ))}
+                    {subscriptions.map((tier) => {
+                      const currencySymbol = tier.currency === 'USD' ? '$' : tier.currency === 'EUR' ? '€' : '₽'
+                      return (
+                        <SubscriptionTier
+                          key={tier.id}
+                          name={tier.name || 'Tier name'}
+                          price={parseInt(tier.price) || 0}
+                          description="Subscription tier"
+                          benefits={tier.benefits.filter(b => b.trim())}
+                          currency={currencySymbol}
+                        />
+                      )
+                    })}
                   </div>
 
                   <div className="mt-8">
