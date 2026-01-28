@@ -10,10 +10,10 @@ interface HomePageProps {
 }
 
 const featuredAuthors = [
-  { id: '1', name: 'Анна Иванова', avatar: '', subscribers: 12500, category: 'Иллюстрация' },
-  { id: '2', name: 'Дмитрий Петров', avatar: '', subscribers: 8300, category: 'Музыка' },
-  { id: '3', name: 'Мария Сидорова', avatar: '', subscribers: 15000, category: 'Подкасты' },
-  { id: '4', name: 'Алексей Козлов', avatar: '', subscribers: 6700, category: 'Видео' }
+  { id: '1', name: 'Анна Иванова', username: 'ANNA_ART', avatar: '', subscribers: 12500, category: 'Иллюстрация' },
+  { id: '2', name: 'Дмитрий Петров', username: 'DMITRY_MUSIC', avatar: '', subscribers: 8300, category: 'Музыка' },
+  { id: '3', name: 'Мария Сидорова', username: 'MARIA_PODCAST', avatar: '', subscribers: 15000, category: 'Подкасты' },
+  { id: '4', name: 'Алексей Козлов', username: 'ALEX_VIDEO', avatar: '', subscribers: 6700, category: 'Видео' }
 ]
 
 const categories = [
@@ -26,13 +26,17 @@ const categories = [
 ]
 
 export function HomePage({ onNavigate, authorProfiles }: HomePageProps) {
-  const allAuthors = [...featuredAuthors, ...authorProfiles.map(p => ({
-    id: p.id,
-    name: p.displayName,
-    avatar: p.avatar,
-    subscribers: 0,
-    category: p.category
-  }))]
+  const allAuthors = [
+    ...featuredAuthors,
+    ...authorProfiles.map(p => ({
+      id: p.id,
+      name: p.displayName,
+      username: p.createdBy,
+      avatar: p.avatar,
+      subscribers: p.followers?.length || 0,
+      category: p.category
+    }))
+  ]
   return (
     <div className="min-h-screen">
       <section className="relative py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/5">
@@ -99,7 +103,10 @@ export function HomePage({ onNavigate, authorProfiles }: HomePageProps) {
               <Card 
                 key={author.id}
                 className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => onNavigate('profile', author.id)}
+                onClick={() => {
+                  window.history.pushState({}, '', `/${author.username}`)
+                  onNavigate('profile', author.id)
+                }}
               >
                 <div className="flex flex-col items-center text-center gap-4">
                   <Avatar className="w-20 h-20">
@@ -119,6 +126,7 @@ export function HomePage({ onNavigate, authorProfiles }: HomePageProps) {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation()
+                      window.history.pushState({}, '', `/${author.username}`)
                       onNavigate('profile', author.id)
                     }}
                   >

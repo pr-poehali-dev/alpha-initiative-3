@@ -44,11 +44,74 @@ export interface AuthorProfile {
   posts?: Post[]
 }
 
+const mockProfiles: AuthorProfile[] = [
+  {
+    id: 'mock-1',
+    displayName: 'Анна Иванова',
+    createdBy: 'ANNA_ART',
+    category: 'Иллюстрация',
+    bio: 'Профессиональный иллюстратор и художник',
+    avatar: '',
+    cover: '',
+    socialLinks: { instagram: '', youtube: '', twitter: '' },
+    subscriptions: [
+      { id: '1', name: 'Basic', price: '5', currency: 'USD', benefits: ['Access to posts'], previewImage: '' }
+    ],
+    followers: [],
+    posts: []
+  },
+  {
+    id: 'mock-2',
+    displayName: 'Дмитрий Петров',
+    createdBy: 'DMITRY_MUSIC',
+    category: 'Музыка',
+    bio: 'Музыкант и композитор',
+    avatar: '',
+    cover: '',
+    socialLinks: { instagram: '', youtube: '', twitter: '' },
+    subscriptions: [
+      { id: '1', name: 'Basic', price: '10', currency: 'USD', benefits: ['Early access to music'], previewImage: '' }
+    ],
+    followers: [],
+    posts: []
+  },
+  {
+    id: 'mock-3',
+    displayName: 'Мария Сидорова',
+    createdBy: 'MARIA_PODCAST',
+    category: 'Подкасты',
+    bio: 'Ведущая подкастов о саморазвитии',
+    avatar: '',
+    cover: '',
+    socialLinks: { instagram: '', youtube: '', twitter: '' },
+    subscriptions: [
+      { id: '1', name: 'Basic', price: '3', currency: 'USD', benefits: ['Exclusive episodes'], previewImage: '' }
+    ],
+    followers: [],
+    posts: []
+  },
+  {
+    id: 'mock-4',
+    displayName: 'Алексей Козлов',
+    createdBy: 'ALEX_VIDEO',
+    category: 'Видео',
+    bio: 'Видеограф и режиссер',
+    avatar: '',
+    cover: '',
+    socialLinks: { instagram: '', youtube: '', twitter: '' },
+    subscriptions: [
+      { id: '1', name: 'Basic', price: '7', currency: 'USD', benefits: ['Behind the scenes content'], previewImage: '' }
+    ],
+    followers: [],
+    posts: []
+  }
+]
+
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("auth")
   const [currentUser, setCurrentUser] = useState<string>("")
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("")
-  const [authorProfiles, setAuthorProfiles] = useState<AuthorProfile[]>([])
+  const [authorProfiles, setAuthorProfiles] = useState<AuthorProfile[]>(mockProfiles)
   const [userFollowing, setUserFollowing] = useState<string[]>([])
   const [userSubscriptions, setUserSubscriptions] = useState<string[]>([])
 
@@ -57,8 +120,12 @@ function App() {
     const username = path.substring(1)
     
     const savedProfiles = localStorage.getItem("boosty_profiles")
+    let allProfiles = [...mockProfiles]
+    
     if (savedProfiles) {
-      setAuthorProfiles(JSON.parse(savedProfiles))
+      const userProfiles = JSON.parse(savedProfiles) as AuthorProfile[]
+      allProfiles = [...mockProfiles, ...userProfiles]
+      setAuthorProfiles(allProfiles)
     }
 
     const savedFollowing = localStorage.getItem("boosty_following")
@@ -71,17 +138,16 @@ function App() {
       setUserSubscriptions(JSON.parse(savedSubscriptions))
     }
 
-    if (username && savedProfiles) {
-      const profiles = JSON.parse(savedProfiles) as AuthorProfile[]
-      const profile = profiles.find(p => p.createdBy.toLowerCase() === username.toLowerCase())
+    if (username) {
+      const profile = allProfiles.find(p => p.createdBy.toLowerCase() === username.toLowerCase())
       if (profile) {
         const savedUser = localStorage.getItem("boosty_user")
         if (savedUser) {
           setCurrentUser(savedUser)
-          setSelectedAuthorId(profile.id)
-          setCurrentPage("profile")
-          return
         }
+        setSelectedAuthorId(profile.id)
+        setCurrentPage("profile")
+        return
       }
     }
     
@@ -127,7 +193,8 @@ function App() {
   }
 
   const handleCreateProfile = (profile: Omit<AuthorProfile, 'id' | 'createdBy' | 'followers'>) => {
-    const existingProfile = authorProfiles.find(p => p.createdBy === currentUser)
+    const userProfiles = authorProfiles.filter(p => !p.id.startsWith('mock-'))
+    const existingProfile = userProfiles.find(p => p.createdBy === currentUser)
     
     if (existingProfile) {
       const updatedProfile: AuthorProfile = {
@@ -138,12 +205,13 @@ function App() {
         followers: existingProfile.followers
       }
       
-      const updatedProfiles = authorProfiles.map(p => 
+      const updatedUserProfiles = userProfiles.map(p => 
         p.id === existingProfile.id ? updatedProfile : p
       )
       
-      setAuthorProfiles(updatedProfiles)
-      localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+      const allProfiles = [...mockProfiles, ...updatedUserProfiles]
+      setAuthorProfiles(allProfiles)
+      localStorage.setItem("boosty_profiles", JSON.stringify(updatedUserProfiles))
       setSelectedAuthorId(existingProfile.id)
       setCurrentPage("profile")
       return
@@ -156,9 +224,10 @@ function App() {
       followers: []
     }
     
-    const updatedProfiles = [...authorProfiles, newProfile]
-    setAuthorProfiles(updatedProfiles)
-    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+    const updatedUserProfiles = [...userProfiles, newProfile]
+    const allProfiles = [...mockProfiles, ...updatedUserProfiles]
+    setAuthorProfiles(allProfiles)
+    localStorage.setItem("boosty_profiles", JSON.stringify(updatedUserProfiles))
     
     setSelectedAuthorId(newProfile.id)
     setCurrentPage("profile")
@@ -188,7 +257,9 @@ function App() {
     })
     
     setAuthorProfiles(updatedProfiles)
-    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+    
+    const userProfiles = updatedProfiles.filter(p => !p.id.startsWith('mock-'))
+    localStorage.setItem("boosty_profiles", JSON.stringify(userProfiles))
   }
 
   const handleAddPost = (authorId: string, post: Omit<Post, 'id' | 'authorId' | 'createdAt' | 'likes' | 'comments'>) => {
@@ -212,7 +283,9 @@ function App() {
     })
 
     setAuthorProfiles(updatedProfiles)
-    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+    
+    const userProfiles = updatedProfiles.filter(p => !p.id.startsWith('mock-'))
+    localStorage.setItem("boosty_profiles", JSON.stringify(userProfiles))
   }
 
   const handleSubscribe = (authorId: string) => {
