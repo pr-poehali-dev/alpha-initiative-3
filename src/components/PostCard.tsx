@@ -13,6 +13,7 @@ interface PostCardProps {
   likes: number
   comments: number
   isSubscriberOnly?: boolean
+  isBlurred?: boolean
   image?: string
 }
 
@@ -25,23 +26,28 @@ export function PostCard({
   likes, 
   comments,
   isSubscriberOnly,
+  isBlurred,
   image
 }: PostCardProps) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative">
       {image && (
         <div className="aspect-video bg-muted relative">
-          <img src={image} alt={title} className="w-full h-full object-cover" />
+          <img 
+            src={image} 
+            alt={title} 
+            className={`w-full h-full object-cover ${isBlurred ? 'blur-2xl' : ''}`}
+          />
           {isSubscriberOnly && (
-            <Badge className="absolute top-3 right-3 bg-primary">
+            <Badge className="absolute top-3 right-3 bg-primary z-10">
               <Icon name="Lock" size={12} className="mr-1" />
-              Для подписчиков
+              Subscribers Only
             </Badge>
           )}
         </div>
       )}
       
-      <div className="p-5 space-y-4">
+      <div className={`p-5 space-y-4 ${isBlurred ? 'blur-sm pointer-events-none' : ''}`}>
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
             <AvatarImage src={authorAvatar} />
@@ -69,6 +75,25 @@ export function PostCard({
           </div>
         </div>
       </div>
+
+      {isBlurred && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="text-center space-y-3 p-6">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <Icon name="Lock" size={32} className="text-primary" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-lg">Subscribers Only</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Subscribe to view this content
+              </p>
+            </div>
+            <Button size="sm" className="mt-2">
+              Subscribe Now
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   )
 }

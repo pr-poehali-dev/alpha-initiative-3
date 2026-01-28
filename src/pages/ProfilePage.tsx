@@ -4,14 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Icon from "@/components/ui/icon"
 import { PostCard } from "@/components/PostCard"
 import { SubscriptionTier } from "@/components/SubscriptionTier"
-import { AuthorProfile } from "@/App"
+import { CreatePostDialog } from "@/components/CreatePostDialog"
+import { AuthorProfile, Post } from "@/App"
 
 interface ProfilePageProps {
   authorId: string
   authorProfiles: AuthorProfile[]
   currentUser: string
   isFollowing: boolean
+  isSubscribed: boolean
   onFollowToggle: (authorId: string) => void
+  onSubscribe: (authorId: string) => void
+  onAddPost: (authorId: string, post: Omit<Post, 'id' | 'authorId' | 'createdAt' | 'likes' | 'comments'>) => void
   onBack: () => void
   onEditProfile?: () => void
 }
@@ -83,9 +87,10 @@ const subscriptionTiers = [
   }
 ]
 
-export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing, onFollowToggle, onBack, onEditProfile }: ProfilePageProps) {
+export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing, isSubscribed, onFollowToggle, onSubscribe, onAddPost, onBack, onEditProfile }: ProfilePageProps) {
   const profile = authorProfiles.find(p => p.id === authorId)
   const isOwner = profile?.createdBy === currentUser
+  const posts = profile?.posts || []
   
   if (!profile) {
     return (
@@ -157,11 +162,38 @@ export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing
             </TabsList>
 
             <TabsContent value="posts" className="mt-8">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockPosts.map((post, idx) => (
-                  <PostCard key={idx} {...post} />
-                ))}
-              </div>
+              {isOwner && (
+                <div className="mb-6">
+                  <CreatePostDialog 
+                    onCreatePost={(post) => onAddPost(authorId, post)}
+                  />
+                </div>
+              )}
+              
+              {posts.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {posts.map((post) => (
+                    <PostCard 
+                      key={post.id}
+                      title={post.title}
+                      excerpt={post.content}
+                      author={profile?.displayName || ''}
+                      authorAvatar={profile?.avatar}
+                      date={new Date(post.createdAt).toLocaleDateString()}
+                      likes={post.likes}
+                      comments={post.comments}
+                      isSubscriberOnly={post.isSubscriberOnly}
+                      isBlurred={post.isSubscriberOnly && !isSubscribed && !isOwner}
+                      image={post.image}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Icon name="FileText" size={48} className="mx-auto mb-4 opacity-50" />
+                  <p>No posts yet</p>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="subscriptions" className="mt-8">
@@ -267,7 +299,7 @@ export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing
                   <span className="text-muted-foreground ml-1">followers</span>
                 </div>
                 <div>
-                  <span className="font-semibold">0</span>
+                  <span className="font-semibold">{posts.length}</span>
                   <span className="text-muted-foreground ml-1">posts</span>
                 </div>
               </div>
@@ -303,15 +335,51 @@ export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing
           </div>
         </div>
 
-        <Tabs defaultValue="subscriptions" className="py-8">
+        <Tabs defaultValue="posts" className="py-8">
           <TabsList>
-            <TabsTrigger value="subscriptions">Подписки</TabsTrigger>
-            <TabsTrigger value="about">О себе</TabsTrigger>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="about">About</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="posts" className="mt-8">
+            {isOwner && (
+              <div className="mb-6">
+                <CreatePostDialog 
+                  onCreatePost={(post) => onAddPost(authorId, post)}
+                />
+              </div>
+            )}
+            
+            {posts.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posts.map((post) => (
+                  <PostCard 
+                    key={post.id}
+                    title={post.title}
+                    excerpt={post.content}
+                    author={profile.displayName}
+                    authorAvatar={profile.avatar}
+                    date={new Date(post.createdAt).toLocaleDateString()}
+                    likes={post.likes}
+                    comments={post.comments}
+                    isSubscriberOnly={post.isSubscriberOnly}
+                    isBlurred={post.isSubscriberOnly && !isSubscribed && !isOwner}
+                    image={post.image}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <Icon name="FileText" size={48} className="mx-auto mb-4 opacity-50" />
+                <p>No posts yet</p>
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="subscriptions" className="mt-8">
             <div className="max-w-5xl">
-              <h2 className="text-2xl font-bold mb-6">Выберите уровень подписки</h2>
+              <h2 className="text-2xl font-bold mb-6">Choose Subscription Tier</h2>
               <div className="grid md:grid-cols-3 gap-6">
                 {profile.subscriptions.map((tier) => {
                   const currencySymbol = tier.currency === 'USD' ? '$' : tier.currency === 'EUR' ? '€' : '₽'
@@ -334,6 +402,7 @@ export function ProfilePage({ authorId, authorProfiles, currentUser, isFollowing
                         currency={currencySymbol}
                         authorName={profile.displayName}
                         userNickname={currentUser}
+                        onSubscribe={() => onSubscribe(authorId)}
                       />
                     </div>
                   )

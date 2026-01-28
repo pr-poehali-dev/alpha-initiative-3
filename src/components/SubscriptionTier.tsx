@@ -58,9 +58,10 @@ export function SubscriptionTier({
     }
     
     setIsSubscribed(true)
+    onSubscribe?.()
+    
     setTimeout(() => {
       setIsDialogOpen(false)
-      onSubscribe?.()
     }, 2000)
   }
   return (

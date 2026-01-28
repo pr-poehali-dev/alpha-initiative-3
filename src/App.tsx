@@ -7,6 +7,18 @@ import { CreateAuthorPage } from "@/pages/CreateAuthorPage"
 
 type Page = "auth" | "home" | "profile" | "createAuthor"
 
+export interface Post {
+  id: string
+  authorId: string
+  title: string
+  content: string
+  image?: string
+  isSubscriberOnly: boolean
+  createdAt: string
+  likes: number
+  comments: number
+}
+
 export interface AuthorProfile {
   id: string
   displayName: string
@@ -29,6 +41,7 @@ export interface AuthorProfile {
   }[]
   createdBy: string
   followers: string[]
+  posts?: Post[]
 }
 
 function App() {
@@ -37,6 +50,7 @@ function App() {
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("")
   const [authorProfiles, setAuthorProfiles] = useState<AuthorProfile[]>([])
   const [userFollowing, setUserFollowing] = useState<string[]>([])
+  const [userSubscriptions, setUserSubscriptions] = useState<string[]>([])
 
   useEffect(() => {
     const path = window.location.pathname
@@ -50,6 +64,11 @@ function App() {
     const savedFollowing = localStorage.getItem("boosty_following")
     if (savedFollowing) {
       setUserFollowing(JSON.parse(savedFollowing))
+    }
+
+    const savedSubscriptions = localStorage.getItem("boosty_subscriptions")
+    if (savedSubscriptions) {
+      setUserSubscriptions(JSON.parse(savedSubscriptions))
     }
 
     if (username && savedProfiles) {
@@ -172,6 +191,36 @@ function App() {
     localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
   }
 
+  const handleAddPost = (authorId: string, post: Omit<Post, 'id' | 'authorId' | 'createdAt' | 'likes' | 'comments'>) => {
+    const newPost: Post = {
+      ...post,
+      id: Date.now().toString(),
+      authorId,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      comments: 0
+    }
+
+    const updatedProfiles = authorProfiles.map(profile => {
+      if (profile.id === authorId) {
+        return {
+          ...profile,
+          posts: [...(profile.posts || []), newPost]
+        }
+      }
+      return profile
+    })
+
+    setAuthorProfiles(updatedProfiles)
+    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+  }
+
+  const handleSubscribe = (authorId: string) => {
+    const updatedSubscriptions = [...userSubscriptions, authorId]
+    setUserSubscriptions(updatedSubscriptions)
+    localStorage.setItem("boosty_subscriptions", JSON.stringify(updatedSubscriptions))
+  }
+
   if (currentPage === "auth") {
     return <AuthPage onAuth={handleAuth} />
   }
@@ -195,7 +244,10 @@ function App() {
           authorProfiles={authorProfiles}
           currentUser={currentUser}
           isFollowing={userFollowing.includes(selectedAuthorId)}
+          isSubscribed={userSubscriptions.includes(selectedAuthorId)}
           onFollowToggle={handleFollowToggle}
+          onSubscribe={handleSubscribe}
+          onAddPost={handleAddPost}
           onEditProfile={() => setCurrentPage("createAuthor")}
           onBack={() => setCurrentPage("home")} 
         />
