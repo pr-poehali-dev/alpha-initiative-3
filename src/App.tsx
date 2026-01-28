@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/Header"
 import { HomePage } from "@/pages/HomePage"
 import { ProfilePage } from "@/pages/ProfilePage"
@@ -11,9 +11,24 @@ function App() {
   const [currentUser, setCurrentUser] = useState<string>("")
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("")
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem("boosty_user")
+    if (savedUser) {
+      setCurrentUser(savedUser)
+      setCurrentPage("home")
+    }
+  }, [])
+
   const handleAuth = (nickname: string) => {
     setCurrentUser(nickname)
+    localStorage.setItem("boosty_user", nickname)
     setCurrentPage("home")
+  }
+
+  const handleLogout = () => {
+    setCurrentUser("")
+    localStorage.removeItem("boosty_user")
+    setCurrentPage("auth")
   }
 
   const handleNavigate = (page: string, authorId?: string) => {
@@ -31,7 +46,7 @@ function App() {
 
   return (
     <div className="min-h-screen">
-      <Header onNavigate={handleNavigate} />
+      <Header onNavigate={handleNavigate} currentUser={currentUser} onLogout={handleLogout} />
       
       {currentPage === "home" && (
         <HomePage onNavigate={handleNavigate} />
