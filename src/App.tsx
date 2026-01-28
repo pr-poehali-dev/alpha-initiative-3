@@ -25,6 +25,7 @@ export interface AuthorProfile {
     price: string
     currency: string
     benefits: string[]
+    previewImage: string
   }[]
   createdBy: string
 }

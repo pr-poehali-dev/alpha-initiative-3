@@ -35,6 +35,7 @@ interface CreateAuthorPageProps {
       price: string
       currency: string
       benefits: string[]
+      previewImage: string
     }[]
   }) => void
 }
@@ -45,6 +46,7 @@ interface SubscriptionTierData {
   price: string
   currency: string
   benefits: string[]
+  previewImage: string
 }
 
 const categories = [
@@ -75,7 +77,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
   })
 
   const [subscriptions, setSubscriptions] = useState<SubscriptionTierData[]>([
-    { id: "1", name: "Basic", price: "5", currency: "USD", benefits: ["Access to basic content", "Support the author"] },
+    { id: "1", name: "Basic", price: "5", currency: "USD", benefits: ["Access to basic content", "Support the author"], previewImage: "" },
   ])
   
   const avatarInputRef = useRef<HTMLInputElement>(null)
@@ -106,7 +108,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
   const addSubscriptionTier = () => {
     setSubscriptions([
       ...subscriptions,
-      { id: Date.now().toString(), name: "", price: "", currency: "USD", benefits: [""] }
+      { id: Date.now().toString(), name: "", price: "", currency: "USD", benefits: [""], previewImage: "" }
     ])
   }
 
@@ -146,7 +148,8 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
         name: s.name,
         price: s.price,
         currency: s.currency,
-        benefits: s.benefits.filter(b => b.trim())
+        benefits: s.benefits.filter(b => b.trim()),
+        previewImage: s.previewImage
       }))
     })
   }
@@ -412,6 +415,47 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                                 </SelectContent>
                               </Select>
                             </div>
+
+                            <div className="space-y-2">
+                              <Label>Preview Image (What subscribers see)</Label>
+                              <div 
+                                className="relative h-32 rounded-lg border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer overflow-hidden group"
+                                onClick={() => {
+                                  const input = document.createElement('input')
+                                  input.type = 'file'
+                                  input.accept = 'image/*'
+                                  input.onchange = (e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0]
+                                    if (file) {
+                                      const reader = new FileReader()
+                                      reader.onloadend = () => {
+                                        updateSubscription(tier.id, 'previewImage', reader.result as string)
+                                      }
+                                      reader.readAsDataURL(file)
+                                    }
+                                  }
+                                  input.click()
+                                }}
+                              >
+                                {tier.previewImage ? (
+                                  <>
+                                    <img 
+                                      src={tier.previewImage} 
+                                      alt="Preview" 
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <Icon name="Upload" size={24} className="text-white" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                    <Icon name="Image" size={24} />
+                                    <span className="text-sm">Click to upload preview</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
                           <div className="space-y-2">
@@ -524,14 +568,24 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                     {subscriptions.map((tier) => {
                       const currencySymbol = tier.currency === 'USD' ? '$' : tier.currency === 'EUR' ? '€' : '₽'
                       return (
-                        <SubscriptionTier
-                          key={tier.id}
-                          name={tier.name || 'Tier name'}
-                          price={parseInt(tier.price) || 0}
-                          description="Subscription tier"
-                          benefits={tier.benefits.filter(b => b.trim())}
-                          currency={currencySymbol}
-                        />
+                        <div key={tier.id} className="space-y-2">
+                          {tier.previewImage && (
+                            <div className="rounded-lg overflow-hidden aspect-video">
+                              <img 
+                                src={tier.previewImage} 
+                                alt={tier.name || 'Preview'} 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <SubscriptionTier
+                            name={tier.name || 'Tier name'}
+                            price={parseInt(tier.price) || 0}
+                            description="Subscription tier"
+                            benefits={tier.benefits.filter(b => b.trim())}
+                            currency={currencySymbol}
+                          />
+                        </div>
                       )
                     })}
                   </div>

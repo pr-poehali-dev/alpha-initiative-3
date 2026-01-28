@@ -301,14 +301,24 @@ export function ProfilePage({ authorId, authorProfiles, onBack }: ProfilePagePro
                 {profile.subscriptions.map((tier) => {
                   const currencySymbol = tier.currency === 'USD' ? '$' : tier.currency === 'EUR' ? '€' : '₽'
                   return (
-                    <SubscriptionTier 
-                      key={tier.id} 
-                      name={tier.name}
-                      price={parseInt(tier.price)}
-                      description="Subscription tier"
-                      benefits={tier.benefits}
-                      currency={currencySymbol}
-                    />
+                    <div key={tier.id} className="space-y-3">
+                      {tier.previewImage && (
+                        <div className="rounded-lg overflow-hidden aspect-video">
+                          <img 
+                            src={tier.previewImage} 
+                            alt={tier.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <SubscriptionTier 
+                        name={tier.name}
+                        price={parseInt(tier.price)}
+                        description="Subscription tier"
+                        benefits={tier.benefits}
+                        currency={currencySymbol}
+                      />
+                    </div>
                   )
                 })}
               </div>
