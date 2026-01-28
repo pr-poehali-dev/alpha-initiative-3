@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Icon from "@/components/ui/icon"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { AuthorProfile } from "@/App"
 
 interface HomePageProps {
   onNavigate: (page: string, authorId?: string) => void
+  authorProfiles: AuthorProfile[]
 }
 
 const featuredAuthors = [
@@ -23,7 +25,14 @@ const categories = [
   { icon: 'Code', name: 'Разработка', count: 456 }
 ]
 
-export function HomePage({ onNavigate }: HomePageProps) {
+export function HomePage({ onNavigate, authorProfiles }: HomePageProps) {
+  const allAuthors = [...featuredAuthors, ...authorProfiles.map(p => ({
+    id: p.id,
+    name: p.displayName,
+    avatar: p.avatar,
+    subscribers: 0,
+    category: p.category
+  }))]
   return (
     <div className="min-h-screen">
       <section className="relative py-20 md:py-32 bg-gradient-to-br from-primary/10 via-background to-accent/5">
@@ -86,7 +95,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredAuthors.map((author) => (
+            {allAuthors.map((author) => (
               <Card 
                 key={author.id}
                 className="p-6 hover:shadow-lg transition-shadow cursor-pointer"

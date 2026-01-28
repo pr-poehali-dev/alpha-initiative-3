@@ -7,16 +7,44 @@ import { CreateAuthorPage } from "@/pages/CreateAuthorPage"
 
 type Page = "auth" | "home" | "profile" | "createAuthor"
 
+export interface AuthorProfile {
+  id: string
+  displayName: string
+  category: string
+  bio: string
+  avatar: string
+  cover: string
+  socialLinks: {
+    instagram: string
+    youtube: string
+    twitter: string
+  }
+  subscriptions: {
+    id: string
+    name: string
+    price: string
+    currency: string
+    benefits: string[]
+  }[]
+  createdBy: string
+}
+
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>("auth")
   const [currentUser, setCurrentUser] = useState<string>("")
   const [selectedAuthorId, setSelectedAuthorId] = useState<string>("")
+  const [authorProfiles, setAuthorProfiles] = useState<AuthorProfile[]>([])
 
   useEffect(() => {
     const savedUser = localStorage.getItem("boosty_user")
     if (savedUser) {
       setCurrentUser(savedUser)
       setCurrentPage("home")
+    }
+    
+    const savedProfiles = localStorage.getItem("boosty_profiles")
+    if (savedProfiles) {
+      setAuthorProfiles(JSON.parse(savedProfiles))
     }
   }, [])
 
@@ -43,6 +71,21 @@ function App() {
     }
   }
 
+  const handleCreateProfile = (profile: Omit<AuthorProfile, 'id' | 'createdBy'>) => {
+    const newProfile: AuthorProfile = {
+      ...profile,
+      id: Date.now().toString(),
+      createdBy: currentUser
+    }
+    
+    const updatedProfiles = [...authorProfiles, newProfile]
+    setAuthorProfiles(updatedProfiles)
+    localStorage.setItem("boosty_profiles", JSON.stringify(updatedProfiles))
+    
+    setSelectedAuthorId(newProfile.id)
+    setCurrentPage("profile")
+  }
+
   if (currentPage === "auth") {
     return <AuthPage onAuth={handleAuth} />
   }
@@ -52,12 +95,13 @@ function App() {
       <Header onNavigate={handleNavigate} currentUser={currentUser} onLogout={handleLogout} />
       
       {currentPage === "home" && (
-        <HomePage onNavigate={handleNavigate} />
+        <HomePage onNavigate={handleNavigate} authorProfiles={authorProfiles} />
       )}
       
       {currentPage === "profile" && (
         <ProfilePage 
-          authorId={selectedAuthorId} 
+          authorId={selectedAuthorId}
+          authorProfiles={authorProfiles}
           onBack={() => setCurrentPage("home")} 
         />
       )}
@@ -65,7 +109,7 @@ function App() {
       {currentPage === "createAuthor" && (
         <CreateAuthorPage
           onBack={() => setCurrentPage("home")}
-          onComplete={() => setCurrentPage("home")}
+          onComplete={handleCreateProfile}
         />
       )}
     </div>

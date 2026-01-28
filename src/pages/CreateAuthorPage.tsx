@@ -18,7 +18,25 @@ import {
 
 interface CreateAuthorPageProps {
   onBack: () => void
-  onComplete: () => void
+  onComplete: (profile: {
+    displayName: string
+    category: string
+    bio: string
+    avatar: string
+    cover: string
+    socialLinks: {
+      instagram: string
+      youtube: string
+      twitter: string
+    }
+    subscriptions: {
+      id: string
+      name: string
+      price: string
+      currency: string
+      benefits: string[]
+    }[]
+  }) => void
 }
 
 interface SubscriptionTierData {
@@ -120,9 +138,17 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
     setSubscriptions(newSubs)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onComplete()
+  const handleSubmit = () => {
+    onComplete({
+      ...formData,
+      subscriptions: subscriptions.map(s => ({
+        id: s.id,
+        name: s.name,
+        price: s.price,
+        currency: s.currency,
+        benefits: s.benefits.filter(b => b.trim())
+      }))
+    })
   }
 
   return (
@@ -450,9 +476,7 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                     <Button 
                       type="button"
                       className="flex-1 h-12 text-lg"
-                      onClick={() => {
-                        onComplete()
-                      }}
+                      onClick={handleSubmit}
                     >
                       Создать профиль
                     </Button>
