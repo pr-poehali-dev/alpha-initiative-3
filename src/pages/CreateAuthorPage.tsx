@@ -450,9 +450,8 @@ export function CreateAuthorPage({ onBack, onComplete }: CreateAuthorPageProps) 
                     <Button 
                       type="button"
                       className="flex-1 h-12 text-lg"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        handleSubmit(e as any)
+                      onClick={() => {
+                        onComplete()
                       }}
                     >
                       Создать профиль
